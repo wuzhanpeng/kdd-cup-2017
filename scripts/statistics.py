@@ -21,7 +21,6 @@ def loadfromcsv():
 		records.append(fields)
 
 	# filter redundancy time interval
-
 	records = filter(lambda fields: (
 		fields[2].day == fields[3].day and (
 		fields[2].hour >= 6 and 
@@ -30,48 +29,44 @@ def loadfromcsv():
 		fields[2].hour < 19)), records)
 
 	records = map(lambda fields: (
-		fields[0],
-		fields[1],
+		str(fields[0]+'-'+fields[1]),
 		str(fields[2].hour)+'-'+str(fields[2].minute/20),
 		fields[4],
 		'am' if fields[2].hour < 12 else 'pm'), records)
 
-	df = pd.DataFrame(records, columns = ['iid','tid','interval','time','-'])
-
-	return df
+	return records
 
 def statistic():
-	df = loadfromcsv()
+	records = loadfromcsv()
 
-	# route classification
-	grouped = df.groupby(['iid','tid','interval','-']).mean()
+	# route groups
+	routes = {'A-2':[],'A-3':[],'B-1':[],'B-3':[],'C-1':[],'C-3':[]}
+	for record in records:
+		routes[record[0]].append(record[1:])
 
-	# print(df)
-	# print(df.dtypes)
+	for interval in ['am','pm']:
+		i = 1
+		for route in routes:
+			a2 = routes[route]
+			data = filter(lambda r: r[2] == interval, a2)			
+			# print(data)
 
+			# basic statistic
+			timeSeq = map(lambda r: r[1], data)
+			_max = max(timeSeq)
+			_min = min(timeSeq)
+			_mean = sum(timeSeq)/len(timeSeq)
 
-	# print(ammeancol)
-	# print(grouped)
+			# 10-min
+			plt.subplot(3,2,i)
+			plt.hist(np.array(timeSeq), bins = range(1, 500, 10), alpha = 0.5, label = route)
+			plt.legend(loc='upper right')
+			plt.title(str(_max)+' | '+str(_mean)+' | '+str(_min))
+			i = i + 1
 
-	# pieces = [ammeancol, pmmeancol]
-	# res = pd.concat(pieces, axis=1)
-	# print(res)
-
-	# a22 = grouped.loc['A','2',:,'am']
-	# print(a22)
-
-	# plot
-	# a22.plot()
-
-	routes = [('A','2'),('A','3'),('B','1'),('B','3'),('C','1'),('C','3')]
-	# routes = [('A','2')]
-	# for intersection, tollgate in routes:
-	for route in routes:
-		df = grouped.loc[route[0],route[1]]
-		df.plot(by='-')
-		print(df)
-
-	plt.show()
+		print("showing: "+interval)
+		plt.suptitle(interval, size = 40)
+		plt.show()
 
 if __name__ == '__main__':
 	statistic()
