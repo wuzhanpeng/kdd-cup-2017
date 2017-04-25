@@ -36,7 +36,7 @@ def loadfromcsv():
 
 	return records
 
-def statistic():
+def separatedhist():
 	records = loadfromcsv()
 
 	# route groups
@@ -47,9 +47,8 @@ def statistic():
 	for interval in ['am','pm']:
 		i = 1
 		for route in routes:
-			a2 = routes[route]
-			data = filter(lambda r: r[2] == interval, a2)			
-			# print(data)
+			group = routes[route]
+			data = filter(lambda r: r[2] == interval, group)
 
 			# basic statistic
 			timeSeq = map(lambda r: r[1], data)
@@ -62,11 +61,46 @@ def statistic():
 			plt.hist(np.array(timeSeq), bins = range(1, 500, 10), alpha = 0.5, label = route)
 			plt.legend(loc='upper right')
 			plt.title(str(_max)+' | '+str(_mean)+' | '+str(_min))
-			i = i + 1
+			i += 1
 
 		print("showing: "+interval)
 		plt.suptitle(interval, size = 40)
 		plt.show()
 
+def combinedhist():
+	records = loadfromcsv()
+
+	# route groups
+	routes = {'A-2':[],'A-3':[],'B-1':[],'B-3':[],'C-1':[],'C-3':[]}
+	for record in records:
+		routes[record[0]].append(record[1:])
+
+	i = 1
+	for route in routes:
+		group = routes[route]
+
+		title = []
+		for interval in ['am','pm']:
+			data = filter(lambda r: r[2] == interval, group)
+
+			# basic statistic
+			timeSeq = map(lambda r: r[1], data)
+			title.append(interval+': '+(
+				str(max(timeSeq))+' | '+
+				str(sum(timeSeq)/len(timeSeq))+' | '+
+				str(min(timeSeq))))
+
+			# 10-min
+			plt.subplot(3,2,i)
+			plt.hist(np.array(timeSeq), bins = range(1, 500, 10), alpha = 0.25, label = interval)
+
+		plt.legend(loc='upper right')
+		plt.title(title[0]+' - '+title[1])
+		i += 1
+
+	plt.suptitle('Average Hair-cutting time', size = 40)
+	plt.show()
+
 if __name__ == '__main__':
-	statistic()
+	separatedhist()
+	# combinedhist()
