@@ -12,7 +12,7 @@ import math
 from datetime import datetime,timedelta
 
 file_suffix = '.csv'
-path = '../'  # set the data directory
+path = '../dataSets/testing_phase1/'  # set the data directory
 
 def avgTravelTime(in_file):
 
@@ -40,7 +40,7 @@ def avgTravelTime(in_file):
 
         trace_start_time = each_traj[3]
         trace_start_time = datetime.strptime(trace_start_time, "%Y-%m-%d %H:%M:%S")
-        time_window_minute = math.floor(trace_start_time.minute / 20) * 20
+        time_window_minute = int(math.floor(trace_start_time.minute / 20) * 20)
         start_time_window = datetime(trace_start_time.year, trace_start_time.month, trace_start_time.day,
                                      trace_start_time.hour, time_window_minute, 0)
         tt = float(each_traj[-1]) # travel time
@@ -68,7 +68,8 @@ def avgTravelTime(in_file):
 
 def main():
 
-    in_file = 'trajectories(table 5)_training'
+    # in_file = 'trajectories(table 5)_training'
+    in_file = 'trajectories(table 5)_test1'
     avgTravelTime(in_file)
 
 if __name__ == '__main__':
