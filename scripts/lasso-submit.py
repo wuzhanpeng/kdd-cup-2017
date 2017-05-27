@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-rawdata = loadfromcsv(traindatapath)
-testdata = loadfromcsv(testdatapath)
+# phrase-1
+# rawdata = loadfromcsv(traindatapath)
+# testdata = loadfromcsv(testdatapath)
+
+# phrase-2
+rawdata = loadfromcsv(phrase2train)
+testdata = loadfromcsv(phrase2test)
 
 rawdata = rawdata.append(testdata)
-import datetime
-rawdata = rawdata[((rawdata.datetime < datetime.datetime(2016,10,1)) | 
-            (rawdata.datetime > datetime.datetime(2016,10,7))) &
-            ((rawdata.datetime < datetime.datetime(2016,9,15)) |
-            (rawdata.datetime > datetime.datetime(2016,9,17)))]
 
 data = {}
 for route in routes:

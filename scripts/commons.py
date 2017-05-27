@@ -13,6 +13,16 @@ ampms = {
 traindatapath = '../data/training_20min_avg_travel_time.csv'
 testdatapath = '../data/test1_20min_avg_travel_time.csv'
 
+traindatapath2 = '../data/training2_20min_avg_travel_time.csv'
+testdatapath2 = '../data/test2_20min_avg_travel_time.csv'
+
+lasso = '../submissions/[20170520][lasso][alpha_0.07][without_holiday_filtering]submission_travelTime.csv'
+arima = '../submissions/[20170525][arima][without_holiday_filtering]submission_travelTime.csv'
+average = '../submissions/[20170525][average][with_holiday_filtering]submission_travelTime.csv'
+
+phrase2train = '../data/phrase2_training_20min_avg_travel_time.csv'
+phrase2test = '../data/test2_20min_avg_travel_time.csv'
+
 def loadfromcsv(path):
 	agg_csv_file = open(path)
 	columns = agg_csv_file.readline()
@@ -50,29 +60,3 @@ def loadfromcsv(path):
 
 # print (loadfromcsv(traindatapath))
 # print (loadfromcsv(testdatapath))
-
-from statsmodels.tsa.stattools import adfuller
-def test_stationarity(timeseries):
-    dftest = adfuller(timeseries, autolag='AIC')
-    return dftest[1]
-
-def best_diff(df, maxdiff = 8):
-    p_set = {}
-    for i in range(0, maxdiff):
-        temp = df.copy() #每次循环前，重置
-        if i == 0:
-            temp['diff'] = temp[temp.columns[0]]
-        else:
-            temp['diff'] = temp[temp.columns[0]].diff(i)
-            temp = temp.drop(temp.iloc[:i].index) #差分后，前几行的数据会变成nan，所以删掉
-        pvalue = test_stationarity(temp['diff'])
-        p_set[i] = pvalue
-        p_df = pd.DataFrame.from_dict(p_set, orient="index")
-        p_df.columns = ['p_value']
-    i = 0
-    while i < len(p_df):
-        if p_df['p_value'][i]<0.01:
-            bestdiff = i
-            break
-        i += 1
-    return bestdiff

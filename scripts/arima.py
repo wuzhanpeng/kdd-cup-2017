@@ -3,6 +3,7 @@
 from datetime import datetime
 from statsmodels.tsa.arima_model import ARIMA
 from commons import *
+from arima_pre import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -36,7 +37,7 @@ def display(ts, log_recover):
 	log_recover.plot(color='blue', label='Predict')
 	ts.plot(color='red', label='Original')
 	plt.legend(loc='best')
-	print(log_recover-ts)
+	# print(log_recover-ts)
 	plt.title('RMSE: %.4f'% np.sqrt(sum((log_recover-ts)**2)/ts.size))
 	plt.show()
 
@@ -65,8 +66,19 @@ b3train = b3train[0]
 # print(test_stationarity(b3train_log_diff.dropna()['avg-time']))
 # exit(-1)
 
+data = datapreprocess()
+tmp = []
+for row in data['C-3'][6]['am']:
+	for ele in row:
+		tmp.append(ele)
+print (len(tmp))
+# print (tmp)
+b3train = pd.DataFrame(tmp, index=pd.date_range(start=datetime.datetime(2016,1,1), periods=len(tmp)))
+b3train = b3train[0]
+
 # preprocess
-b3train_log_diff, appendix = preprocess(b3train)
+# b3train_log_diff, appendix = preprocess(b3train)
+b3train_log_diff = np.log(b3train)
 
 # auto fit best model
 import statsmodels.tsa.stattools as st
@@ -89,13 +101,19 @@ order = st.arma_order_select_ic(b3train_log_diff,max_ar=5,max_ma=5,ic=['aic', 'b
 from statsmodels.tsa.arima_model import ARMA
 model = ARMA(b3train_log_diff, order=order.bic_min_order)
 result_arma = model.fit(disp=-1, method='css')
-train_predict = recover(result_arma.predict(), appendix)
+predict = result_arma.predict()
+# result_arma.plot_predict('2016-05-01','2016-06-10')
+print (len(predict))
+# predict = result_arma.predict(end=len(tmp)-8)
+result_arma.plot_predict(start=3, end=len(predict)+9)
+# print (predict)
+# train_predict = recover(predict, appendix)
 
 # plt.plot(b3train)
 # print (b3train)
 # print (train_predict)
 # plt.plot(train_predict)
 
-# plt.show()
+plt.show()
 
-display(b3train, train_predict)
+# display(b3train, train_predict)
