@@ -33,7 +33,7 @@ def calmape(data, test):
 print ("lasso - %f" %(calmape(lassodata, test)))
 print ("arima - %f" %(calmape(arimadata, test)))
 print ("average - %f" %(calmape(averagedata, test)))
-exit(-1)
+# exit(-1)
 
 def combinemodels():
 	X, y = [], []
@@ -45,9 +45,9 @@ def combinemodels():
 	result = pd.merge(averagedata, lassodata, how='inner', on=['route','weekday','am-pm','time-interval'])
 	result = pd.merge(result, arimadata, how='inner', on=['route','weekday','am-pm','time-interval'])
 
-	result['avg-time'] = (result['average']+result['lasso']+result['arima'])/3
-	print (calmape(result, test))
-	exit(-1)
+	# result['avg-time'] = (result['average']+result['lasso']+result['arima'])/3
+	# print (calmape(result, test))
+	# exit(-1)
 
 	actual = test[['route','weekday','am-pm','time-interval','avg-time']]
 
@@ -59,8 +59,33 @@ def combinemodels():
 
 	return X, y
 
+def combinedata():
+	X = []
+
+	averagedata.rename(columns={'avg-time':'average'}, inplace=True)
+	lassodata.rename(columns={'avg-time':'lasso'}, inplace=True)
+	arimadata.rename(columns={'avg-time':'arima'}, inplace=True)
+
+	result = pd.merge(averagedata, lassodata, how='inner', on=['route','weekday','am-pm','time-interval'])
+	result = pd.merge(result, arimadata, how='inner', on=['route','weekday','am-pm','time-interval'])
+
+	for idx, row in result[['route','weekday','am-pm','time-interval','average','lasso','arima']].iterrows():
+		X.append([row['average'],row['lasso'],row['arima']])
+
+	return X
+
 from sklearn import linear_model
 X, y = combinemodels()
+# print (len(X))
+# print (len(y))
 
-# reg = linear_model.Lasso(alpha = alpha)
-# reg.fit(X, y)
+reg = linear_model.Lasso(alpha = 0.07)
+reg.fit(X, y)
+
+arimadata = loadfromcsv("../submissions/[20170527][phrase2][arima][without_holiday_filtering]submission_travelTime.csv")
+averagedata = loadfromcsv("../submissions/[20170527][phrase2][average][with_holiday_filtering]submission_travelTime.csv")
+lassodata = loadfromcsv("../submissions/[20170527][phrase2][lasso][alpha_0.07][without_holiday_filtering]submission_travelTime.csv")
+
+y = reg.predict(combinedata())
+for p in y:
+	print (p)
